@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRD2Spec</title>
+<meta name="description" content="PRD2Spec transforma uma frase sobre um problema de produto num documento de requisitos em que todo número tem fonte rastreável, conferida por script.">
+<meta property="og:title" content="PRD2Spec">
+<meta property="og:description" content="Todo número do seu PRD com fonte rastreável, conferida por script.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF8; --raise:#FFFFFF; --sunk:#F4F2EE;
+    --ink:#14100D; --ink-2:#4A423C; --muted:#7D746D; --hair:#E6E1DB; --hair-2:#F1EDE8;
+    --accent:#0A5F55; --accent-2:#0C8A6E; --tint:#EBF4F1;
+    --flag:#A63A1E; --flagt:#FBF0EB;
+    --s1:#0C8A6E; --s2:#B4411F;
+    --glow-a:rgba(12,138,110,.17); --glow-b:rgba(180,65,31,.12); --glow-c:rgba(10,95,85,.13);
+    --shadow:0 1px 2px rgba(20,16,13,.04), 0 8px 28px rgba(20,16,13,.06);
+    --shadow-up:0 2px 6px rgba(20,16,13,.06), 0 18px 48px rgba(20,16,13,.10);
+    --serif:"Newsreader",Georgia,serif;
+    --sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --wrap:1140px; --text:660px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#100D0B; --raise:#191512; --sunk:#16120F;
+      --ink:#F6F3EE; --ink-2:#CFC7BF; --muted:#968D86; --hair:#2B2420; --hair-2:#1F1A17;
+      --accent:#5FBFA8; --accent-2:#3FC2A2; --tint:#13241F;
+      --flag:#E08060; --flagt:#2A1813;
+      --s1:#2AA288; --s2:#D86A48;
+      --glow-a:rgba(42,162,136,.20); --glow-b:rgba(216,106,72,.14); --glow-c:rgba(95,191,168,.13);
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 32px rgba(0,0,0,.34);
+      --shadow-up:0 2px 8px rgba(0,0,0,.45), 0 22px 56px rgba(0,0,0,.44);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#100D0B; --raise:#191512; --sunk:#16120F;
+    --ink:#F6F3EE; --ink-2:#CFC7BF; --muted:#968D86; --hair:#2B2420; --hair-2:#1F1A17;
+    --accent:#5FBFA8; --accent-2:#3FC2A2; --tint:#13241F;
+    --flag:#E08060; --flagt:#2A1813;
+    --s1:#2AA288; --s2:#D86A48;
+    --glow-a:rgba(42,162,136,.20); --glow-b:rgba(216,106,72,.14); --glow-c:rgba(95,191,168,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 32px rgba(0,0,0,.34);
+    --shadow-up:0 2px 8px rgba(0,0,0,.45), 0 22px 56px rgba(0,0,0,.44);
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); font-size:17.5px; line-height:1.62; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; overflow-x:hidden}
+  .wrap{max-width:var(--wrap); margin:0 auto; padding:0 24px}
+  .col{max-width:var(--text)}
+  ::selection{background:var(--tint); color:var(--ink)}
+
+  /* reveal */
+  .rv{opacity:0; transform:translateY(18px); transition:opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1)}
+  .rv.in{opacity:1; transform:none}
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .rv{opacity:1!important; transform:none!important; transition:none}
+    *{animation:none!important}
+  }
+
+  /* ---------- nav ---------- */
+  nav{position:sticky; top:0; z-index:30; background:color-mix(in srgb,var(--paper) 84%,transparent); backdrop-filter:saturate(1.4) blur(14px); border-bottom:1px solid var(--hair-2)}
+  nav .wrap{display:flex; align-items:center; height:60px; gap:2px}
+  nav .mark{font-family:var(--serif); font-weight:600; font-size:20px; letter-spacing:-.015em; margin-right:auto; display:flex; align-items:center; gap:10px}
+  nav .mark i{width:9px; height:9px; border-radius:50%; background:var(--accent-2); font-style:normal; box-shadow:0 0 0 4px var(--tint)}
+  nav .lk{display:flex; gap:2px; overflow-x:auto; scrollbar-width:none}
+  nav .lk::-webkit-scrollbar{display:none}
+  nav a{font-family:var(--mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:99px; white-space:nowrap; transition:color .18s,background .18s}
+  nav a:hover{color:var(--ink)}
+  nav a.on{color:var(--accent); background:var(--tint)}
+  #bar{position:absolute; left:0; bottom:-1px; height:2px; background:var(--accent-2); width:0}
+  @media (max-width:760px){ nav .lk{display:none} }
+
+  /* ---------- hero ---------- */
+  header{position:relative; padding:120px 0 104px; overflow:hidden; border-bottom:1px solid var(--hair)}
+  .mesh{position:absolute; inset:-30% -10% auto -10%; height:150%; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(42% 46% at 18% 26%, var(--glow-a) 0%, transparent 68%),
+      radial-gradient(38% 42% at 82% 16%, var(--glow-c) 0%, transparent 66%),
+      radial-gradient(34% 40% at 64% 78%, var(--glow-b) 0%, transparent 64%);
+    filter:blur(14px); animation:drift 26s ease-in-out infinite alternate}
+  @keyframes drift{to{transform:translate3d(-26px,22px,0) scale(1.06)}}
+  header .wrap{position:relative; z-index:1}
+  .badge{display:inline-flex; align-items:center; gap:9px; font-family:var(--mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); background:var(--raise); border:1px solid var(--hair); padding:7px 15px; border-radius:99px; margin-bottom:30px; box-shadow:var(--shadow)}
+  .badge b{width:6px; height:6px; border-radius:50%; background:var(--accent-2)}
+  h1{font-family:var(--serif); font-weight:500; font-size:clamp(54px,9.4vw,116px); line-height:.94; letter-spacing:-.042em; margin:0 0 28px}
+  h1 em{font-style:normal; background:linear-gradient(104deg,var(--accent-2),var(--accent)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .lede{font-family:var(--serif); font-weight:300; font-size:clamp(22px,2.9vw,31px); line-height:1.34; color:var(--ink-2); margin:0 0 44px; max-width:28ch}
+  .lede b{font-weight:500; color:var(--ink)}
+  .heroby{display:flex; flex-wrap:wrap; gap:10px 22px; font-size:14.5px; color:var(--muted); padding-top:26px; border-top:1px solid var(--hair); max-width:640px}
+  .heroby b{color:var(--ink); font-weight:600}
+
+  /* ---------- faixa de numeros ---------- */
+  .band{background:var(--sunk); border-bottom:1px solid var(--hair)}
+  .band .wrap{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:0; padding-top:0; padding-bottom:0}
+  .bs{padding:40px 26px 42px; border-right:1px solid var(--hair)}
+  .bs:first-child{padding-left:24px} .bs:last-child{border-right:none}
+  .bs b{display:block; font-family:var(--serif); font-weight:500; font-size:clamp(40px,5.2vw,56px); line-height:1; letter-spacing:-.034em; color:var(--accent); margin-bottom:11px; font-variant-numeric:tabular-nums}
+  .bs span{font-size:14.5px; line-height:1.45; color:var(--muted); display:block; max-width:25ch}
+  @media (max-width:640px){ .bs{border-right:none; border-bottom:1px solid var(--hair); padding:28px 24px} .bs:last-child{border-bottom:none} }
+
+  /* ---------- secoes ---------- */
+  section{padding:104px 0; border-bottom:1px solid var(--hair); position:relative}
+  section.alt{background:var(--sunk)}
+  .eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin:0 0 18px; display:flex; align-items:center; gap:10px}
+  .eyebrow::before{content:""; width:22px; height:1px; background:var(--accent); opacity:.5}
+  h2{font-family:var(--serif); font-weight:500; font-size:clamp(33px,5.6vw,54px); line-height:1.06; letter-spacing:-.028em; margin:0 0 26px; max-width:17ch}
+  h3{font-family:var(--sans); font-size:13px; font-weight:600; letter-spacing:.11em; text-transform:uppercase; color:var(--accent); margin:64px 0 18px}
+  p{margin:0 0 20px; max-width:var(--text); color:var(--ink-2)}
+  p strong{color:var(--ink); font-weight:600}
+  code{font-family:var(--mono); font-size:.86em; background:var(--tint); padding:2px 7px; border-radius:5px; color:var(--accent)}
+
+  .pull{font-family:var(--serif); font-weight:400; font-size:clamp(26px,4.2vw,40px); line-height:1.25; letter-spacing:-.018em; color:var(--ink); margin:52px 0; max-width:23ch}
+  .pull b{background:linear-gradient(104deg,var(--accent-2),var(--accent)); -webkit-background-clip:text; background-clip:text; color:transparent; font-weight:500}
+
+  /* ---------- cartoes ---------- */
+  .cards{display:grid; gap:18px; margin:44px 0}
+  .c2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .c3{grid-template-columns:repeat(auto-fit,minmax(255px,1fr))}
+  .c4{grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+  .card{background:var(--raise); border:1px solid var(--hair); border-radius:16px; padding:28px 28px 32px; box-shadow:var(--shadow); transition:transform .3s cubic-bezier(.2,.7,.3,1), box-shadow .3s}
+  .card:hover{transform:translateY(-3px); box-shadow:var(--shadow-up)}
+  .card .n{font-family:var(--mono); font-size:11px; letter-spacing:.12em; color:var(--accent); display:block; margin-bottom:14px}
+  .card h4{font-family:var(--sans); font-size:19.5px; font-weight:600; margin:0 0 10px; line-height:1.24; color:var(--ink)}
+  .card p{font-size:15.5px; line-height:1.52; color:var(--muted); margin:0; max-width:none}
+  .card p b{color:var(--ink-2); font-weight:600}
+
+  /* ---------- documento antes/depois ---------- */
+  .docs{display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:18px; margin:44px 0 28px}
+  .doc{background:var(--raise); border:1px solid var(--hair); border-radius:16px; overflow:hidden; box-shadow:var(--shadow)}
+  .doc .top{display:flex; align-items:center; gap:9px; padding:13px 20px; border-bottom:1px solid var(--hair-2); font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase}
+  .doc.bad .top{color:var(--flag); background:var(--flagt)}
+  .doc.good .top{color:var(--accent); background:var(--tint)}
+  .doc .top i{width:7px; height:7px; border-radius:50%; font-style:normal}
+  .doc.bad .top i{background:var(--s2)} .doc.good .top i{background:var(--s1)}
+  .doc .body{padding:24px 22px 26px; font-size:15.5px; line-height:1.68; color:var(--ink-2)}
+  .doc .body .hl{background:var(--flagt); color:var(--flag); padding:1px 5px; border-radius:4px; font-weight:600}
+  .doc.good .body .hl{background:var(--tint); color:var(--accent)}
+  .doc .fn{display:block; margin-top:16px; padding-top:14px; border-top:1px dashed var(--hair); font-family:var(--mono); font-size:12px; line-height:1.7; color:var(--muted)}
+  .doc .fn b{color:var(--accent); font-weight:500}
+  .doc .miss{display:block; margin-top:16px; padding-top:14px; border-top:1px dashed var(--hair); font-family:var(--mono); font-size:12px; color:var(--muted); font-style:italic}
+
+  /* ---------- chips das verificacoes ---------- */
+  .chips{display:flex; flex-wrap:wrap; gap:9px; margin:32px 0 0}
+  .chip{display:inline-flex; align-items:center; gap:9px; background:var(--raise); border:1px solid var(--hair); border-radius:99px; padding:9px 16px 9px 12px; font-size:14.5px; color:var(--ink-2); box-shadow:var(--shadow)}
+  .chip b{font-family:var(--mono); font-size:11px; color:var(--accent); background:var(--tint); border-radius:99px; padding:3px 7px}
+
+  /* ---------- grafico ---------- */
+  figure{margin:44px 0 0; background:var(--raise); border:1px solid var(--hair); border-radius:18px; padding:30px 28px 26px; box-shadow:var(--shadow)}
+  .figtop{display:flex; flex-wrap:wrap; justify-content:space-between; gap:14px 26px; align-items:baseline; margin-bottom:26px}
+  .figtop h4{font-family:var(--sans); font-size:17px; font-weight:600; margin:0; color:var(--ink)}
+  .leg{display:flex; gap:18px; font-size:14px; color:var(--muted)}
+  .leg i{display:inline-flex; align-items:center; gap:8px; font-style:normal}
+  .leg .m{width:12px; height:12px; border-radius:3px}
+  .leg .m.a{background:var(--s1)} .leg .m.b{background:var(--s2)}
+  .plot{width:100%; height:auto; display:block}
+  .scrollx{overflow-x:auto; margin:0 -4px; padding:0 4px}
+  figcaption{font-size:13.5px; color:var(--muted); margin-top:18px; line-height:1.55}
+
+  /* ---------- limites ---------- */
+  .lim{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; margin:36px 0 0}
+  .lim div{border-left:2px solid var(--hair); padding:4px 0 4px 18px; font-size:15.5px; line-height:1.5; color:var(--muted)}
+  .lim div b{display:block; color:var(--ink); font-weight:600; margin-bottom:3px; font-size:16px}
+
+  /* ---------- cta ---------- */
+  .cta{text-align:center; padding:112px 0}
+  .cta h2{margin:0 auto 24px; max-width:19ch}
+  .cta p{margin:0 auto 10px; color:var(--muted)}
+  footer{padding:44px 0 72px; font-size:14px; color:var(--muted); border-top:1px solid var(--hair)}
+  footer p{max-width:var(--text); margin-bottom:12px}
+
+  @media (max-width:640px){
+    header{padding:72px 0 64px}
+    section{padding:68px 0}
+    .cta{padding:76px 0}
+  }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <span class="mark"><i></i>PRD2Spec</span>
+  <span class="lk">
+    <a href="#problema">Problema</a>
+    <a href="#produto">Como funciona</a>
+    <a href="#prova">A prova</a>
+    <a href="#rigor">Rigor</a>
+  </span>
+  <div id="bar"></div>
+</div></nav>
+
+<header>
+  <div class="mesh" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="badge"><b></b>Pesquisa de mestrado · PPGES/Unipampa</span>
+    <h1>Todo número<br>com <em>dono</em>.</h1>
+    <p class="lede">O PRD2Spec transforma uma frase sobre um problema de produto num documento de requisitos em que <b>cada número é rastreável até a consulta que o produziu</b>, conferido por script.</p>
+    <div class="heroby">
+      <span><b>Filipe Garcia Silva</b></span>
+      <span>Laboratório de Inteligência Artificial Aplicada</span>
+      <span>2026/2</span>
+    </div>
+  </div>
+</header>
+
+<div class="band"><div class="wrap">
+  <div class="bs rv"><b>0</b><span>números sem fonte nos documentos que o método produziu</span></div>
+  <div class="bs rv"><b>267</b><span>números sem fonte nos documentos escritos por prompt direto</span></div>
+  <div class="bs rv"><b>3</b><span>problemas de produto diferentes, resolvidos ponta a ponta</span></div>
+  <div class="bs rv"><b>36</b><span>julgamentos cegos na última rodada de avaliação</span></div>
+</div></div>
+
+<section id="problema"><div class="wrap">
+  <p class="eyebrow rv">O problema</p>
+  <h2 class="rv">Um documento pode estar inteiro e mesmo assim parar a engenharia</h2>
+  <div class="col">
+    <p class="rv">Quando a engenharia pergunta de onde veio um número, a resposta costuma não
+    existir. <strong>Escrever o documento com um modelo de linguagem não resolve, e pode
+    piorar:</strong> o texto fica mais convincente, com a mesma ausência de rastro por trás.</p>
+  </div>
+
+  <div class="docs">
+    <div class="doc bad rv">
+      <div class="top"><i></i>Como costuma chegar</div>
+      <div class="body">
+        O atraso na entrega é o principal motivo de insatisfação, respondendo por cerca de
+        <span class="hl">60% das avaliações negativas</span>.
+        <span class="miss">De onde veio esse número? Qual população? Qual período? Ninguém sabe.</span>
+      </div>
+    </div>
+    <div class="doc good rv">
+      <div class="top"><i></i>Como o PRD2Spec entrega</div>
+      <div class="body">
+        Pedidos entregues com atraso têm nota média <span class="hl">2,27</span> contra
+        <span class="hl">4,29</span> dos entregues no prazo.<sup>1</sup>
+        <span class="fn"><b>[1]</b> fonte: consulta q2 · escopo: pedidos com status entregue e
+        avaliação associada · grão: pedido, atraso em dias inteiros · data: 2026-10-06</span>
+      </div>
+    </div>
+  </div>
+  <p class="col rv" style="font-size:15.5px;color:var(--muted)">Os quatro campos à direita são um
+  contrato. Sem eles, o número não entra, e quem interrompe o processo é um script.</p>
+</div></section>
+
+<section id="produto" class="alt"><div class="wrap">
+  <p class="eyebrow rv">Como funciona</p>
+  <h2 class="rv">Quatro estágios, dois contratos, oito checagens</h2>
+  <figure class="rv arq">
+    <div class="figtop">
+      <h4>A arquitetura, e as duas fronteiras que a sustentam</h4>
+      <div class="leg">
+        <i><span class="m" style="background:var(--muted);opacity:.45"></span>dentro do modelo</i>
+        <i><span class="m a"></span>fora do modelo</i>
+        <i><span class="m b"></span>caminho de erro</i>
+      </div>
+    </div>
+    <svg viewBox="0 0 1060 452" class="plot" role="img"
+      aria-label="Arquitetura do pipeline: o agente escritor enquadra, pesquisa e escreve dentro do modelo, produzindo fatos e o documento; a verificacao roda fora do modelo e reexecuta as consultas, devolvendo o documento para correcao quando acha erro; um revisor em contexto limpo le o documento e os fatos sem conhecer o metodo.">
+      <defs>
+        <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker>
+        <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--s2)"></path></marker>
+      </defs>
+
+      <!-- regioes -->
+      <g fill="none" stroke-dasharray="5 5" stroke-width="1.5">
+        <rect x="4" y="70" width="644" height="212" rx="12" stroke="var(--hair)"></rect>
+        <rect x="664" y="70" width="392" height="112" rx="12" stroke="var(--s1)" opacity=".55"></rect>
+        <rect x="444" y="330" width="424" height="110" rx="12" stroke="var(--hair)"></rect>
+      </g>
+      <g font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="1.1">
+        <text x="634" y="88" text-anchor="end" fill="var(--muted)">DENTRO DO MODELO</text>
+        <text x="1042" y="88" text-anchor="end" fill="var(--s1)">FORA DO MODELO · DETERMINÍSTICO</text>
+        <text x="854" y="348" text-anchor="end" fill="var(--muted)">CONTEXTO LIMPO · NÃO VÊ O MÉTODO</text>
+      </g>
+
+      <!-- entradas -->
+      <g>
+        <rect x="16" y="14" width="180" height="38" rx="8" fill="var(--sunk)" stroke="var(--hair)"></rect>
+        <text x="106" y="38" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="12.5" fill="var(--ink)">frase + respostas do time</text>
+        <rect x="236" y="14" width="180" height="38" rx="8" fill="var(--sunk)" stroke="var(--hair)"></rect>
+        <text x="326" y="38" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="12.5" fill="var(--ink)">base de dados</text>
+      </g>
+
+      <!-- estagios -->
+      <g fill="var(--raise)" stroke="var(--hair)" stroke-width="1.5">
+        <rect x="16" y="96" width="180" height="64" rx="10"></rect>
+        <rect x="236" y="96" width="180" height="64" rx="10"></rect>
+        <rect x="456" y="96" width="180" height="64" rx="10"></rect>
+        <rect x="676" y="96" width="180" height="64" rx="10" stroke="var(--s1)"></rect>
+      </g>
+      <g font-family="IBM Plex Sans, sans-serif" font-size="14.5" font-weight="600" text-anchor="middle" fill="var(--ink)">
+        <text x="106" y="124">1 · Enquadrar</text><text x="326" y="124">2 · Pesquisar</text>
+        <text x="546" y="124">3 · Escrever</text><text x="766" y="124" fill="var(--s1)">4 · Verificar</text>
+      </g>
+      <g font-family="IBM Plex Sans, sans-serif" font-size="11.5" text-anchor="middle" fill="var(--muted)">
+        <text x="106" y="145">questionário fixo</text><text x="326" y="145">uma pergunta por consulta</text>
+        <text x="546" y="145">oito seções</text><text x="766" y="145">V1 a V8, por script</text>
+      </g>
+
+      <!-- artefatos -->
+      <g fill="var(--tint)" stroke="var(--s1)" stroke-width="1.5" stroke-opacity=".5">
+        <rect x="236" y="206" width="180" height="64" rx="10"></rect>
+        <rect x="456" y="206" width="180" height="64" rx="10"></rect>
+      </g>
+      <g font-family="IBM Plex Mono, monospace" font-size="13" text-anchor="middle" fill="var(--accent)">
+        <text x="326" y="232">fatos/*.md</text><text x="546" y="232">prd.md</text>
+      </g>
+      <g font-family="IBM Plex Sans, sans-serif" font-size="11" text-anchor="middle" fill="var(--muted)">
+        <text x="326" y="252">fonte · escopo</text><text x="326" y="266">grão · data</text>
+        <text x="546" y="252">todo número</text><text x="546" y="266">cita um fato</text>
+      </g>
+
+      <!-- veredito -->
+      <rect x="880" y="106" width="160" height="44" rx="8" fill="var(--s1)"></rect>
+      <text x="960" y="133" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="13.5" font-weight="600" fill="var(--raise)">veredito calculado</text>
+
+      <!-- revisor -->
+      <rect x="456" y="352" width="180" height="60" rx="10" fill="var(--raise)" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <text x="546" y="378" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14.5" font-weight="600" fill="var(--ink)">Revisor</text>
+      <text x="546" y="397" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="var(--muted)">agente isolado</text>
+      <rect x="676" y="362" width="180" height="40" rx="8" fill="var(--sunk)" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <text x="766" y="387" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="var(--ink)">lista de defeitos</text>
+
+      <!-- ligacoes -->
+      <g color="var(--muted)" stroke="currentColor" stroke-width="1.5" fill="none" marker-end="url(#a1)">
+        <line x1="106" y1="52" x2="106" y2="90"></line>
+        <line x1="326" y1="52" x2="326" y2="90"></line>
+        <line x1="196" y1="128" x2="230" y2="128"></line>
+        <line x1="326" y1="160" x2="326" y2="200"></line>
+        <polyline points="416,238 436,238 436,128 450,128"></polyline>
+        <line x1="546" y1="160" x2="546" y2="200"></line>
+        <polyline points="636,238 656,238 656,128 670,128"></polyline>
+        <line x1="856" y1="128" x2="874" y2="128"></line>
+        <polyline points="500,270 500,346"></polyline>
+        <polyline points="326,270 326,382 450,382"></polyline>
+        <line x1="636" y1="382" x2="670" y2="382"></line>
+      </g>
+      <polyline points="676,150 652,150 652,302 546,302 546,276" fill="none" stroke="var(--s2)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a2)"></polyline>
+
+      <!-- rotulos das ligacoes -->
+      <g font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--muted)">
+        <text x="440" y="118" text-anchor="end">cita</text>
+        <text x="336" y="182">grava o fato</text>
+        <text x="556" y="182">redige</text>
+        <text x="668" y="218">reexecuta as consultas</text>
+        <text x="492" y="316" text-anchor="end">lê</text>
+        <text x="336" y="368">e os fatos citados</text>
+        <text x="556" y="322" fill="var(--s2)">erro: corrige e roda de novo</text>
+      </g>
+    </svg>
+    <figcaption>As caixas verdes são os artefatos que o método obriga a existir. O documento nunca
+    cita a base diretamente: ele cita um fato, e o fato é que carrega fonte, escopo, grão e data.
+    As duas fronteiras tracejadas são o que torna o resultado conferível: a verificação roda fora
+    do modelo e reexecuta as consultas, e o revisor lê o documento sem nunca ter visto o método.</figcaption>
+  </figure>
+
+  <div class="cards c4">
+    <div class="card rv"><span class="n">ESTÁGIO 01</span><h4>Enquadrar</h4><p><b>Pergunta sem resposta não vira suposição:</b> vira pergunta em aberto declarada.</p></div>
+    <div class="card rv"><span class="n">ESTÁGIO 02</span><h4>Pesquisar</h4><p>Uma pergunta por consulta. Cada fato nasce com os quatro campos.</p></div>
+    <div class="card rv"><span class="n">ESTÁGIO 03</span><h4>Escrever</h4><p>Cada requisito diz o comportamento, o critério de aceite e de onde veio.</p></div>
+    <div class="card rv"><span class="n">ESTÁGIO 04</span><h4>Verificar</h4><p>Oito checagens reexecutam as consultas. <b>Erro interrompe o processo.</b></p></div>
+  </div>
+
+  <h3 class="rv">O que o script confere, sozinho</h3>
+  <div class="chips">
+    <span class="chip rv"><b>V1</b>Toda citação resolve para um fato completo</span>
+    <span class="chip rv"><b>V2</b>As oito seções obrigatórias, na ordem</span>
+    <span class="chip rv"><b>V3</b>Veredito calculado, nunca declarado</span>
+    <span class="chip rv"><b>V4</b>Todo requisito cumpre o contrato</span>
+    <span class="chip rv"><b>V5</b>Nenhum fato diagnosticado e abandonado</span>
+    <span class="chip rv"><b>V6</b>Critério de aceite com condição testável</span>
+    <span class="chip rv"><b>V7</b>Pergunta em aberto com caminho e bloqueio</span>
+    <span class="chip rv"><b>V8</b>Todo risco com sinal e resposta</span>
+  </div>
+
+  <h3 class="rv">E uma quinta peça, que não é estágio</h3>
+  <div class="cards c2">
+    <div class="card rv"><span class="n">REVISOR ISOLADO</span><h4>Alguém que nunca viu o método</h4><p>Lê o documento sem saber como foi produzido e lista o que impediria a engenharia de começar. <b>Ele não elogia.</b></p></div>
+    <div class="card rv"><span class="n">MÉTODO VERSIONADO</span><h4>Executável por outra pessoa</h4><p><b>O método não vive na cabeça de quem o criou:</b> são arquivos de instrução congelados numa tag. Por isso o experimento pode ser repetido.</p></div>
+  </div>
+</div></section>
+
+<section id="prova"><div class="wrap">
+  <p class="eyebrow rv">A prova</p>
+  <h2 class="rv">Medido contra o caminho mais fácil, e às cegas</h2>
+  <p class="col rv">Dois documentos por problema: um pelo pipeline, outro por um agente que recebe
+  só um briefing. <strong>Mesmo enunciado, mesmas seções, mesmo acesso aos dados.</strong> A única
+  variável é o método.</p>
+
+  <figure class="rv">
+    <div class="figtop">
+      <h4>Números sem fonte rastreável, somando os três casos</h4>
+      <div class="leg"><i><span class="m a"></span>PRD2Spec</i><i><span class="m b"></span>prompt direto</i></div>
+    </div>
+    <svg viewBox="0 0 900 210" class="plot" role="img" aria-label="Numeros sem fonte: zero no PRD2Spec contra 267 no prompt direto, somando os tres casos.">
+      <g font-family="IBM Plex Sans, sans-serif" font-size="15" fill="var(--muted)">
+        <text x="0" y="56">PRD2Spec</text><text x="0" y="146">prompt direto</text>
+      </g>
+      <rect x="150" y="30" width="3" height="34" rx="1.5" fill="var(--s1)"></rect>
+      <text x="166" y="57" font-family="Newsreader, serif" font-size="34" font-weight="600" fill="var(--s1)">0</text>
+      <rect x="150" y="120" width="690" height="34" rx="4" fill="var(--s2)"></rect>
+      <text x="824" y="147" text-anchor="end" font-family="Newsreader, serif" font-size="34" font-weight="600" fill="#fff">267</text>
+      <text x="150" y="192" font-family="IBM Plex Sans, sans-serif" font-size="14.5" fill="var(--muted)">Os valores conferem dos dois lados ao reexecutar as consultas. A diferença nunca foi acertar o número.</text>
+    </svg>
+    <figcaption>Mesmo extrator nos dois documentos, sem intervenção humana. Um número só conta
+    como rastreável quando a frase em que ele aparece carrega a citação do fato que o
+    sustenta.</figcaption>
+  </figure>
+
+  <p class="pull rv">A diferença nunca foi acertar o número. Foi <b>conseguir conferir</b>.</p>
+
+  <h3 class="rv">Como pontuamos</h3>
+  <div class="chips">
+    <span class="chip rv"><b>01</b>17 critérios binários: cumpre ou não cumpre</span>
+    <span class="chip rv"><b>02</b>cada SIM exige um trecho literal do documento</span>
+    <span class="chip rv"><b>03</b>um documento por vez, sem o concorrente à vista</span>
+    <span class="chip rv"><b>04</b>três execuções, rótulos sorteados, chave aberta no fim</span>
+  </div>
+
+  <figure class="rv">
+    <div class="figtop">
+      <h4>A régua inteira, e onde a diferença mora</h4>
+      <div class="leg"><i><span class="m a"></span>PRD2Spec</i><i><span class="m b"></span>prompt direto</i></div>
+    </div>
+    <div class="scrollx">
+    <svg viewBox="0 0 780 578" class="plot" style="min-width:680px" role="img"
+      aria-label="Os 17 criterios da rubrica em quatro blocos, mostrando quais dos tres casos cada lado cumpre. A diferenca se concentra no bloco de prontidao para engenharia, e o criterio B3 e cumprido nos tres casos pelo PRD2Spec e em nenhum pelo prompt direto.">
+      <g font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing=".09em">
+        <text x="520" y="18" fill="var(--s1)">PRD2SPEC</text>
+        <text x="660" y="18" fill="var(--s2)">PROMPT DIRETO</text>
+        <text x="528" y="38" text-anchor="middle" fill="var(--muted)">C1</text>
+        <text x="668" y="38" text-anchor="middle" fill="var(--muted)">C1</text>
+        <text x="551" y="38" text-anchor="middle" fill="var(--muted)">C2</text>
+        <text x="691" y="38" text-anchor="middle" fill="var(--muted)">C2</text>
+        <text x="574" y="38" text-anchor="middle" fill="var(--muted)">C3</text>
+        <text x="714" y="38" text-anchor="middle" fill="var(--muted)">C3</text>
+      </g>
+      <line x1="0" y1="50" x2="780" y2="50" stroke="var(--s1)" stroke-opacity=".45" stroke-width="1"></line>
+      <text x="0" y="68" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing=".11em" fill="var(--s1)">A · EVIDÊNCIA E HONESTIDADE</text>
+      <text x="0" y="92" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--s1)">A1</text>
+      <text x="34" y="92" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--ink)">o número diz de onde veio</text>
+      <rect x="520" y="80" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="661" y="81" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="543" y="80" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="80" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="80" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="706" y="80" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <text x="0" y="116" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">A2</text>
+      <text x="34" y="116" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">associação não é apresentada como causa</text>
+      <rect x="520" y="104" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="660" y="104" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="543" y="104" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="104" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="104" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="706" y="104" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <text x="0" y="140" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">A3</text>
+      <text x="34" y="140" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">o número declara a população a que se refere</text>
+      <rect x="520" y="128" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="660" y="128" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="543" y="128" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="128" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="128" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="706" y="128" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <text x="0" y="164" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">A4</text>
+      <text x="34" y="164" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">o que não se sabe vira pergunta em aberto</text>
+      <rect x="520" y="152" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="660" y="152" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="543" y="152" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="152" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="152" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="706" y="152" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <text x="0" y="188" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">A5</text>
+      <text x="34" y="188" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">declara os limites dos dados que usou</text>
+      <rect x="520" y="176" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="660" y="176" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="543" y="176" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="176" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="176" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="706" y="176" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <line x1="0" y1="198" x2="780" y2="198" stroke="var(--s1)" stroke-opacity=".45" stroke-width="1"></line>
+      <text x="0" y="216" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing=".11em" fill="var(--s1)">B · PRONTIDÃO PARA ENGENHARIA</text>
+      <text x="0" y="240" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">B1</text>
+      <text x="34" y="240" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">o requisito diz o que o sistema faz</text>
+      <rect x="520" y="228" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="660" y="228" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="543" y="228" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="228" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="228" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="706" y="228" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <text x="0" y="264" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--s1)">B2</text>
+      <text x="34" y="264" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--ink)">o requisito tem condição verificável de pronto</text>
+      <rect x="520" y="252" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="660" y="252" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="543" y="252" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="252" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="252" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="707" y="253" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <text x="0" y="288" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--s1)">B3</text>
+      <text x="34" y="288" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--ink)">o requisito diz a quem não se aplica</text>
+      <rect x="520" y="276" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="661" y="277" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="543" y="276" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="684" y="277" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="566" y="276" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="707" y="277" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <text x="0" y="312" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--s1)">B4</text>
+      <text x="34" y="312" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--ink)">declara precedência entre requisitos</text>
+      <rect x="520" y="300" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="660" y="300" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="543" y="300" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="300" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="300" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="707" y="301" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <text x="0" y="336" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--s1)">B5</text>
+      <text x="34" y="336" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--ink)">dá para escrever um teste de cada requisito</text>
+      <rect x="521" y="325" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="661" y="325" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="544" y="325" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="684" y="325" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="566" y="324" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="707" y="325" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <line x1="0" y1="346" x2="780" y2="346" stroke="var(--s1)" stroke-opacity=".45" stroke-width="1"></line>
+      <text x="0" y="364" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing=".11em" fill="var(--s1)">C · DECIDIBILIDADE DE PRODUTO</text>
+      <text x="0" y="388" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">C1</text>
+      <text x="34" y="388" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">métrica de sucesso com alvo e janela</text>
+      <rect x="520" y="376" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="660" y="376" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="543" y="376" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="376" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="376" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="706" y="376" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <text x="0" y="412" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">C2</text>
+      <text x="34" y="412" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">fora de escopo declarado, com motivo</text>
+      <rect x="520" y="400" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="660" y="400" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="543" y="400" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="400" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="400" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="706" y="400" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <text x="0" y="436" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--s2)">C3</text>
+      <text x="34" y="436" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--ink)">ataca a maior parte do problema que apontou</text>
+      <rect x="521" y="425" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="660" y="424" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="544" y="425" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="684" y="425" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="567" y="425" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="707" y="425" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <text x="0" y="460" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">C4</text>
+      <text x="34" y="460" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">o leitor sabe o que não será feito</text>
+      <rect x="520" y="448" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="660" y="448" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="543" y="448" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="448" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="448" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="706" y="448" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <line x1="0" y1="470" x2="780" y2="470" stroke="var(--s1)" stroke-opacity=".45" stroke-width="1"></line>
+      <text x="0" y="488" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing=".11em" fill="var(--s1)">D · LEGIBILIDADE</text>
+      <text x="0" y="512" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">D1</text>
+      <text x="34" y="512" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">o problema fica claro numa leitura</text>
+      <rect x="520" y="500" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="660" y="500" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="543" y="500" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="683" y="500" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <rect x="566" y="500" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="706" y="500" width="16" height="16" rx="3" fill="var(--s2)"></rect>
+      <text x="0" y="536" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--muted)">D2</text>
+      <text x="34" y="536" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">nenhum termo interno sem definição</text>
+      <rect x="521" y="525" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="661" y="525" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="544" y="525" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="684" y="525" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="567" y="525" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="707" y="525" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <text x="0" y="560" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--s1)">D3</text>
+      <text x="34" y="560" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--ink)">nenhuma contradição entre seções</text>
+      <rect x="521" y="549" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="661" y="549" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="543" y="548" width="16" height="16" rx="3" fill="var(--s1)"></rect>
+      <rect x="684" y="549" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="567" y="549" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+      <rect x="707" y="549" width="14" height="14" rx="3" fill="none" stroke="var(--hair)" stroke-width="1.5"></rect>
+    </svg>
+    </div>
+    <figcaption>Cada quadrado é um caso: cheio quer dizer que aquele lado cumpriu o critério ali.
+    Em destaque, os sete critérios em que os dois lados diferem. <strong>Nos blocos C e D o método
+    empata ou perde</strong>, e isso está aqui porque a régua é a mesma para os dois.</figcaption>
+  </figure>
+
+  <p class="pull rv">Toda a diferença mora num bloco: <b>o requisito ser construível</b>.</p>
+
+  <div class="cards c2">
+    <div class="card rv"><span class="n">REPLICAÇÃO</span><h4>Três problemas, não um</h4><p>Notas baixas, custo de frete e recompra. <b>Dois nunca vistos</b> quando o método foi congelado.</p></div>
+    <div class="card rv"><span class="n">CUSTO DECLARADO</span><h4>2,6 vezes mais caro</h4><p>Está reportado <b>porque o ganho não é gratuito.</b></p></div>
+  </div>
+</div></section>
+
+<section id="rigor" class="alt"><div class="wrap">
+  <p class="eyebrow rv">Rigor</p>
+  <h2 class="rv">O que sustentamos, e o que ainda não</h2>
+  <p class="col rv">Um método que cobra proveniência de todo número precisa cobrar o mesmo de si
+  mesmo. A avaliação foi endurecida ao longo do semestre, <strong>mesmo quando isso reduziu a
+  vantagem medida.</strong></p>
+
+  <div class="cards c2">
+    <div class="card rv"><span class="n">O QUE ESTÁ SUSTENTADO</span><h4>Mais auditável e mais pronto para a engenharia</h4><p>Proveniência verificável por script, não por opinião, em três problemas diferentes.</p></div>
+    <div class="card rv"><span class="n">O QUE NÃO AFIRMAMOS</span><h4>Que seja um PRD melhor em tudo</h4><p>Testamos a afirmação larga contra uma régua de outro autor e <b>retiramos do relatório</b>.</p></div>
+  </div>
+
+  <h3 class="rv">Limites declarados</h3>
+  <div class="lim">
+    <div class="rv"><b>Um domínio</b>Três casos, todos sobre a mesma base pública de comércio eletrônico.</div>
+    <div class="rv"><b>Avaliadores próximos</b>Os dois avaliadores vêm da mesma família de modelo.</div>
+    <div class="rv"><b>Uma execução por lado</b>Repetições do mesmo modo diferem em até dois pontos.</div>
+    <div class="rv"><b>Mecanismos parcialmente isolados</b>Dois dos cinco braços de ablação foram rodados.</div>
+  </div>
+</div></section>
+
+<div class="cta"><div class="wrap">
+  <p class="eyebrow rv" style="justify-content:center">Próximos passos</p>
+  <h2 class="rv">Um documento de produto deveria ser conferível como código</h2>
+  <div class="cards c3" style="text-align:left">
+    <div class="card rv"><span class="n">PASSO 01</span><h4>Um segundo domínio</h4><p>Levar o método para fora do comércio eletrônico e ver se o resultado acompanha.</p></div>
+    <div class="card rv"><span class="n">PASSO 02</span><h4>Qual peça faz o trabalho</h4><p>Desligar um mecanismo por vez e medir quanto cada um sustenta sozinho.</p></div>
+    <div class="card rv"><span class="n">PASSO 03</span><h4>Medir qualidade, não presença</h4><p>Uma avaliação que pergunte se o conteúdo é bom, e não apenas se a seção existe.</p></div>
+  </div>
+</div></div>
+
+<footer><div class="wrap">
+  <p>Projeto da disciplina <strong>Laboratório de Inteligência Artificial Aplicada</strong>,
+  Programa de Pós-Graduação em Engenharia de Software, Universidade Federal do Pampa, 2026/2.</p>
+  <p>Todos os dados vêm de uma base pública e anonimizada de comércio eletrônico brasileiro, com
+  registros de 2016 a 2018. Os exemplos de documento acima são ilustrativos e usam números
+  medidos nessa base.</p>
+</div></footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduz = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* revelar ao rolar */
+  var alvos=[].slice.call(document.querySelectorAll(".rv"));
+  if(reduz || !("IntersectionObserver" in window)){
+    alvos.forEach(function(e){e.classList.add("in");});
+  } else {
+    var grupos={};
+    var io=new IntersectionObserver(function(ents){
+      ents.forEach(function(en){
+        if(!en.isIntersecting)return;
+        var pai=en.target.parentNode;
+        var k=grupos[pai]=(grupos[pai]||0);
+        en.target.style.transitionDelay=Math.min(k*70,350)+"ms";
+        grupos[pai]=k+1;
+        en.target.classList.add("in");
+        io.unobserve(en.target);
+      });
+    },{rootMargin:"0px 0px -8% 0px",threshold:.08});
+    alvos.forEach(function(e){io.observe(e);});
+  }
+
+  /* barra de progresso + secao ativa */
+  var bar=document.getElementById("bar");
+  var links=[].slice.call(document.querySelectorAll("nav a"));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute("href"));});
+  function aoRolar(){
+    var h=document.documentElement;
+    var p=h.scrollTop/Math.max(h.scrollHeight-h.clientHeight,1);
+    bar.style.width=(p*100).toFixed(2)+"%";
+    var meio=h.scrollTop+h.clientHeight*0.4, at=-1;
+    secs.forEach(function(s,i){ if(s && s.offsetTop<=meio) at=i; });
+    links.forEach(function(a,i){a.classList.toggle("on",i===at);});
+  }
+  aoRolar();
+  window.addEventListener("scroll",aoRolar,{passive:true});
+  window.addEventListener("resize",aoRolar,{passive:true});
+})();
+</script>
+</body>
+</html>
