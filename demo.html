@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRD2Spec · execução comparada</title>
+<meta name="description" content="Execute lado a lado o PRD2Spec e um prompt direto sobre o mesmo problema, com a base de dados real.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500;6..72,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF8; --raise:#FFFFFF; --sunk:#F4F2EE;
+    --ink:#14100D; --ink-2:#4A423C; --muted:#7D746D; --hair:#E6E1DB; --hair-2:#F1EDE8;
+    --accent:#0A5F55; --accent-2:#0C8A6E; --tint:#EBF4F1;
+    --flag:#A63A1E; --flagt:#FBF0EB;
+    --s1:#0C8A6E; --s2:#B4411F;
+    --shadow:0 1px 2px rgba(20,16,13,.04), 0 8px 28px rgba(20,16,13,.06);
+    --serif:"Newsreader",Georgia,serif;
+    --sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+    --paper:#100D0B; --raise:#191512; --sunk:#16120F;
+    --ink:#F6F3EE; --ink-2:#CFC7BF; --muted:#968D86; --hair:#2B2420; --hair-2:#1F1A17;
+    --accent:#5FBFA8; --accent-2:#3FC2A2; --tint:#13241F;
+    --flag:#E08060; --flagt:#2A1813; --s1:#2AA288; --s2:#D86A48;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 32px rgba(0,0,0,.34);
+  }}
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1320px; margin:0 auto; padding:0 24px}
+  a{color:var(--accent)}
+  /* sem animacao, o .evt nao pode ficar presa no opacity:0 de onde ela animaria */
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important; transition:none!important}
+    .evt{opacity:1!important; transform:none!important}
+  }
+
+  /* topo */
+  nav{position:sticky; top:0; z-index:30; background:color-mix(in srgb,var(--paper) 88%,transparent); backdrop-filter:blur(12px); border-bottom:1px solid var(--hair-2)}
+  nav .wrap{display:flex; align-items:center; gap:16px; height:58px}
+  nav .mark{font-family:var(--serif); font-weight:600; font-size:19px; letter-spacing:-.015em; text-decoration:none; color:var(--ink); display:flex; align-items:center; gap:9px}
+  nav .mark i{width:8px; height:8px; border-radius:50%; background:var(--accent-2); font-style:normal}
+  nav .volta{margin-left:auto; font-family:var(--mono); font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); text-decoration:none}
+  nav .volta:hover{color:var(--ink)}
+
+  header{padding:46px 0 26px}
+  h1{font-family:var(--serif); font-weight:500; font-size:clamp(32px,5vw,50px); line-height:1.06; letter-spacing:-.03em; margin:0 0 14px}
+  .sub{font-size:18px; color:var(--ink-2); max-width:70ch; margin:0 0 26px}
+
+  /* escolha do caso */
+  .casos{display:flex; flex-wrap:wrap; gap:12px; margin-bottom:10px}
+  .caso{background:var(--raise); border:1px solid var(--hair); border-radius:14px; padding:16px 20px; cursor:pointer; text-align:left; font:inherit; color:inherit; transition:border-color .2s, transform .2s; max-width:340px}
+  .caso:hover{transform:translateY(-2px)}
+  .caso[aria-pressed="true"]{border-color:var(--accent-2); box-shadow:0 0 0 1px var(--accent-2)}
+  .caso b{display:block; font-size:16px; font-weight:600; margin-bottom:3px}
+  .caso span{font-size:14px; color:var(--muted); line-height:1.4}
+  .aviso{font-size:14px; color:var(--muted); margin:0 0 26px}
+
+  /* controles */
+  .ctrl{display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:16px 0 20px; border-top:1px solid var(--hair); border-bottom:1px solid var(--hair); margin-bottom:26px; position:sticky; top:58px; background:var(--paper); z-index:20}
+  button{font:inherit; cursor:pointer; border-radius:99px; border:1px solid var(--hair); background:var(--raise); color:var(--ink); padding:9px 18px; transition:background .15s,border-color .15s}
+  button:hover:not(:disabled){border-color:var(--accent-2)}
+  button:disabled{opacity:.4; cursor:default}
+  button.primario{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600}
+  button.primario:hover:not(:disabled){background:var(--accent-2); border-color:var(--accent-2)}
+  .passos{display:flex; gap:6px; margin-left:auto; flex-wrap:wrap}
+  .pst{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); padding:6px 11px; border-radius:99px; border:1px solid transparent}
+  .pst.feito{color:var(--accent)}
+  .pst.agora{color:var(--accent); border-color:var(--accent-2); background:var(--tint)}
+
+  /* palco */
+  .palco{display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start}
+  @media (max-width:900px){ .palco{grid-template-columns:1fr} }
+  .lado{background:var(--raise); border:1px solid var(--hair); border-radius:16px; overflow:hidden; box-shadow:var(--shadow)}
+  .lado > h2{margin:0; padding:15px 20px; font-family:var(--sans); font-size:15px; font-weight:600; border-bottom:1px solid var(--hair-2); display:flex; align-items:center; gap:10px}
+  .lado.a > h2{color:var(--s1); background:var(--tint)}
+  .lado.b > h2{color:var(--s2); background:var(--flagt)}
+  .lado > h2 small{margin-left:auto; font-family:var(--mono); font-size:11px; font-weight:400; letter-spacing:.05em; opacity:.8}
+  .corpo{padding:18px 20px 22px; min-height:260px}
+
+  .evt{opacity:0; transform:translateY(8px); animation:entra .45s cubic-bezier(.2,.7,.3,1) forwards}
+  @keyframes entra{to{opacity:1; transform:none}}
+  .et{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:18px 0 10px; display:flex; align-items:center; gap:9px}
+  .et:first-child{margin-top:0}
+  .et::after{content:""; flex:1; height:1px; background:var(--hair-2)}
+
+  .qa{margin:0 0 12px; font-size:14.5px}
+  .qa b{display:block; color:var(--muted); font-weight:400; font-size:13px}
+  .sqlbox{background:var(--sunk); border-radius:9px; padding:11px 13px; font-family:var(--mono); font-size:12px; line-height:1.5; white-space:pre-wrap; overflow-x:auto; margin:0 0 8px; color:var(--ink-2)}
+  .arq{font-family:var(--mono); font-size:12px; color:var(--accent); margin:0 0 6px}
+  table.res{border-collapse:collapse; font-size:12.5px; margin:0 0 16px; width:100%}
+  table.res th{font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); text-align:left; padding:5px 10px 5px 0; border-bottom:1px solid var(--hair)}
+  table.res td{padding:5px 10px 5px 0; border-bottom:1px solid var(--hair-2); font-variant-numeric:tabular-nums}
+  .maisl{font-size:12px; color:var(--muted)}
+
+  .fato{border-left:2px solid var(--s1); padding:2px 0 2px 13px; margin:0 0 14px; font-size:14px}
+  .fato b{display:block; font-weight:600; margin-bottom:4px}
+  .fato dl{display:grid; grid-template-columns:auto 1fr; gap:2px 10px; margin:7px 0 0; font-size:12.5px; color:var(--muted)}
+  .fato dt{font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--accent); padding-top:1px}
+  .fato dd{margin:0}
+
+  .sec{margin:0 0 12px; font-size:14px}
+  .sec b{display:block; font-size:13px; color:var(--muted); font-weight:400; font-family:var(--mono); letter-spacing:.04em; margin-bottom:3px}
+  .sec p{margin:0; color:var(--ink-2); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
+  cite{font-style:normal; background:var(--tint); color:var(--accent); border-radius:4px; padding:0 5px; font-family:var(--mono); font-size:11.5px; cursor:pointer; border:none}
+  cite:hover{background:var(--accent); color:#fff}
+  .semcite{background:var(--flagt); color:var(--flag); border-radius:4px; padding:0 4px}
+
+  .ver{display:flex; flex-wrap:wrap; gap:7px; margin:0 0 12px}
+  .vk{font-family:var(--mono); font-size:11.5px; padding:5px 10px; border-radius:99px; background:var(--tint); color:var(--accent)}
+  .nada{font-size:14px; color:var(--muted); background:var(--flagt); border-radius:9px; padding:13px 15px; border-left:2px solid var(--s2)}
+
+  .ach{font-size:13.5px; margin:0 0 9px; padding-left:13px; border-left:2px solid var(--hair)}
+  .ach.bl{border-left-color:var(--s2)}
+  .ach b{font-family:var(--mono); font-size:10.5px; letter-spacing:.07em; color:var(--muted); display:block}
+  .ach.bl b{color:var(--s2)}
+
+  /* resultado */
+  .result{margin:26px 0 90px; background:var(--raise); border:1px solid var(--hair); border-radius:16px; padding:28px; box-shadow:var(--shadow); display:none}
+  .result.on{display:block}
+  .result h3{font-family:var(--serif); font-weight:500; font-size:28px; letter-spacing:-.02em; margin:0 0 20px}
+  .rgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:24px; margin-bottom:26px}
+  .rbox b{display:block; font-family:var(--serif); font-size:40px; font-weight:500; line-height:1; letter-spacing:-.03em; margin-bottom:8px; font-variant-numeric:tabular-nums}
+  .rbox.a b{color:var(--s1)} .rbox.b b{color:var(--s2)}
+  .rbox span{font-size:14px; color:var(--muted)}
+  .blocos{width:100%; border-collapse:collapse; font-size:14.5px}
+  .blocos th{font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); text-align:left; padding:0 12px 9px 0; border-bottom:1px solid var(--hair)}
+  .blocos td{padding:11px 12px 11px 0; border-bottom:1px solid var(--hair-2)}
+  .blocos td.v{font-variant-numeric:tabular-nums; font-weight:600}
+  .ganha{color:var(--s1)} .perde{color:var(--s2)}
+  .nota{font-size:13.5px; color:var(--muted); margin-top:18px; max-width:76ch}
+
+  /* painel do fato */
+  dialog{border:1px solid var(--hair); border-radius:16px; background:var(--raise); color:var(--ink); max-width:720px; width:calc(100% - 40px); padding:0; box-shadow:0 24px 70px rgba(0,0,0,.3)}
+  dialog::backdrop{background:rgba(10,8,6,.5)}
+  dialog .top{display:flex; align-items:center; gap:12px; padding:16px 22px; border-bottom:1px solid var(--hair-2)}
+  dialog .top b{font-size:15px}
+  dialog .top button{margin-left:auto; padding:5px 13px; font-size:14px}
+  dialog .in{padding:20px 22px 24px}
+  .dicaRodar{font-size:12.5px; color:var(--muted); margin-left:12px}
+  #saidaRodar{margin-top:16px}
+  .confere{font-size:14.5px; font-weight:600; margin:0 0 12px; padding:10px 14px; border-radius:9px}
+  .confere.ok{background:var(--tint); color:var(--accent)}
+  .confere.nao{background:var(--flagt); color:var(--flag)}
+  td.dif{color:var(--flag); font-weight:600}
+
+  /* oficina do contrato */
+  .oficina{margin:0 0 100px; padding-top:56px; border-top:1px solid var(--hair)}
+  .oficina h2{font-family:var(--serif); font-weight:500; font-size:clamp(28px,4vw,40px); letter-spacing:-.025em; line-height:1.1; margin:0 0 12px}
+  .oficina .sub{margin-bottom:22px}
+  .ofgrid{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:18px; align-items:start}
+  @media (max-width:900px){ .ofgrid{grid-template-columns:1fr} }
+  .ofpainel{background:var(--raise); border:1px solid var(--hair); border-radius:16px; padding:20px; box-shadow:var(--shadow)}
+  .ofpainel .et:first-child{margin-top:0}
+  #ofExemplos{display:flex; flex-wrap:wrap; gap:7px; margin:0 0 12px}
+  .ofex{font-size:13px; padding:6px 13px}
+  #ofSql{width:100%; min-height:170px; font-family:var(--mono); font-size:12.5px; line-height:1.55; background:var(--sunk); color:var(--ink); border:1px solid var(--hair); border-radius:10px; padding:12px; resize:vertical}
+  .ofacoes{display:flex; align-items:center; gap:12px; margin:12px 0 4px}
+  .ofacoes small{font-size:12.5px; color:var(--muted)}
+  .tabelas{font-size:12px; color:var(--muted); line-height:1.6; margin:14px 0 0}
+  .tabelas code{font-size:11.5px}
+  #ofRes{margin-top:14px; overflow-x:auto}
+  #ofFato label{display:block; font-size:13px; color:var(--muted); margin:12px 0 5px}
+  #ofFato label b{color:var(--ink); font-weight:600}
+  #ofFato input{width:100%; font:inherit; font-size:14.5px; color:var(--ink); background:var(--sunk); border:1px solid var(--hair); border-radius:9px; padding:9px 11px}
+  #ofFato input:focus, #ofSql:focus{outline:2px solid var(--accent-2); outline-offset:1px}
+  #ofChecks{list-style:none; padding:0; margin:18px 0 0; display:grid; gap:6px}
+  #ofChecks li{display:flex; gap:10px; font-size:13.5px; padding:8px 11px; border-radius:9px; background:var(--sunk)}
+  #ofChecks li b{white-space:nowrap; font-weight:600; min-width:178px}
+  #ofChecks li span{color:var(--muted)}
+  #ofChecks li.ok{background:var(--tint)} #ofChecks li.ok b{color:var(--accent)}
+  #ofChecks li.nao b{color:var(--muted)}
+  #ofSaida{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px}
+  @media (max-width:640px){ #ofSaida{grid-template-columns:1fr} #ofChecks li{flex-direction:column; gap:2px} }
+  .ofc{border-radius:12px; padding:15px 16px; border:1px solid var(--hair)}
+  .ofc .t{font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; margin:0 0 9px}
+  .ofc.comum .t{color:var(--muted)}
+  .ofc.aceito{background:var(--tint); border-color:transparent} .ofc.aceito .t{color:var(--accent)}
+  .ofc.recusado{background:var(--flagt); border-color:transparent} .ofc.recusado .t{color:var(--flag)}
+  .ofc .frase{font-size:15px; margin:0 0 9px; color:var(--ink)}
+  .ofc .rodape{font-family:var(--mono); font-size:11.5px; line-height:1.6; color:var(--muted); border-top:1px dashed var(--hair); padding-top:8px; margin:0 0 8px}
+  .ofc .rodape b{color:var(--accent); font-weight:500}
+  .ofc .pe{font-size:12.5px; color:var(--muted); margin:0}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="mark" href="index.html"><i></i>PRD2Spec</a>
+  <a class="volta" href="index.html">voltar ao projeto</a>
+</div></nav>
+
+<header><div class="wrap">
+  <h1>Execute os dois lados sobre o mesmo problema</h1>
+  <p class="sub">À esquerda, o PRD2Spec. À direita, um agente que recebe só um briefing. Mesmo
+  enunciado, mesmas seções pedidas, mesmo acesso à base. A única variável é o método. Tudo o que
+  aparece abaixo foi produzido de verdade, e cada consulta pode ser reexecutada.</p>
+  <div class="casos" id="casos"></div>
+  <p class="aviso">Dois dos três problemas estão disponíveis para executar aqui. O terceiro, e o
+  resultado completo dos três, estão na <a href="index.html#prova">página do projeto</a>.</p>
+</div></header>
+
+<div class="wrap">
+  <div class="ctrl">
+    <button class="primario" id="bExec">Executar</button>
+    <button id="bPasso">Passo seguinte</button>
+    <button id="bZera">Reiniciar</button>
+    <div class="passos" id="passos"></div>
+  </div>
+
+  <div class="palco">
+    <section class="lado a"><h2>PRD2Spec<small id="statA"></small></h2><div class="corpo" id="ladoA"></div></section>
+    <section class="lado b"><h2>Prompt direto<small id="statB"></small></h2><div class="corpo" id="ladoB"></div></section>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <section class="oficina" id="oficina">
+    <h2>Agora é a sua vez: transforme um número em fato</h2>
+    <p class="sub">Escreva uma consulta sobre a mesma base, rode, e escreva a frase que iria para o
+    documento. O PRD2Spec só aceita a frase se o número dela tiver saído da consulta e se você
+    declarar escopo, grão e data. É a mesma regra que a verificação aplica aos documentos acima.</p>
+    <div class="ofgrid">
+      <div class="ofpainel">
+        <p class="et">1 · A consulta</p>
+        <div id="ofExemplos"></div>
+        <textarea id="ofSql" spellcheck="false" aria-label="Consulta SQL"></textarea>
+        <div class="ofacoes"><button class="primario" id="ofRodar">Rodar</button><small>roda no seu navegador, só leitura</small></div>
+        <p class="tabelas">Tabelas: <code>pedidos</code> <code>avaliacoes</code> <code>itens</code>
+        <code>produtos</code> <code>vendedores</code> <code>clientes</code> <code>categorias</code>,
+        com os nomes de coluna originais da base.</p>
+        <div id="ofRes"></div>
+      </div>
+      <div class="ofpainel">
+        <p class="et">2 · O fato</p>
+        <form id="ofFato" hidden onsubmit="return false">
+          <label for="ofAfirm"><b>Afirmação</b> · a frase que iria para o documento</label>
+          <input id="ofAfirm" autocomplete="off" placeholder="ex.: 97,02% dos 99.441 pedidos da base foram entregues">
+          <label for="ofEscopo"><b>Escopo</b> · a população exata</label>
+          <input id="ofEscopo" autocomplete="off" placeholder="ex.: todos os pedidos da base, de qualquer status">
+          <label for="ofGrao"><b>Grão</b> · o que foi contado</label>
+          <input id="ofGrao" autocomplete="off" placeholder="ex.: pedido (order_id)">
+          <label for="ofData"><b>Data da consulta</b></label>
+          <input id="ofData" type="date">
+        </form>
+        <ul id="ofChecks" aria-live="polite"></ul>
+      </div>
+    </div>
+    <div id="ofSaida" aria-live="polite"></div>
+  </section>
+</div>
+
+<dialog id="dlg"><div class="top"><b id="dlgT"></b><button onclick="document.getElementById('dlg').close()">fechar</button></div><div class="in" id="dlgIn"></div></dialog>
+
+<script type="module" src="duckdb.js"></script>
+<script type="module" src="demo.js"></script>
+<script type="module" src="oficina.js"></script>
+</body>
+</html>

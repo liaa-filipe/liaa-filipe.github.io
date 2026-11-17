@@ -1,0 +1,20 @@
+[
+  {
+    "id": "c1-notas-baixas",
+    "titulo": "Notas baixas sem causa conhecida",
+    "enunciado": "Clientes dão nota baixa e o vendedor não sabe por quê.",
+    "arquivo": "caso-c1-notas-baixas.json"
+  },
+  {
+    "id": "c2-frete-pedido-pequeno",
+    "titulo": "O frete pesa no pedido pequeno",
+    "enunciado": "O frete pesa demais no valor de pedidos pequenos.",
+    "arquivo": "caso-c2-frete-pedido-pequeno.json"
+  },
+  {
+    "id": "c3-cliente-nao-volta",
+    "titulo": "O cliente não volta",
+    "enunciado": "O cliente compra uma vez e não volta.",
+    "arquivo": "caso-c3-cliente-nao-volta.json"
+  }
+]

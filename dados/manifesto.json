@@ -1,0 +1,37 @@
+{
+  "pedidos": {
+    "arquivo": "pedidos.parquet",
+    "linhas": 99441,
+    "bytes": 6210761
+  },
+  "avaliacoes": {
+    "arquivo": "avaliacoes.parquet",
+    "linhas": 99224,
+    "bytes": 5512572
+  },
+  "itens": {
+    "arquivo": "itens.parquet",
+    "linhas": 112650,
+    "bytes": 4009134
+  },
+  "produtos": {
+    "arquivo": "produtos.parquet",
+    "linhas": 32951,
+    "bytes": 758268
+  },
+  "vendedores": {
+    "arquivo": "vendedores.parquet",
+    "linhas": 3095,
+    "bytes": 75082
+  },
+  "clientes": {
+    "arquivo": "clientes.parquet",
+    "linhas": 99441,
+    "bytes": 4111307
+  },
+  "categorias": {
+    "arquivo": "categorias.parquet",
+    "linhas": 71,
+    "bytes": 1975
+  }
+}
